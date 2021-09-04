@@ -45,6 +45,10 @@ processInfo getProcessInfo( DWORD processID )
     return result;
 }
 
+int memSort (void* a, void* b) {
+    return (((processInfo*)a)->memInfo.WorkingSetSize - ((processInfo*)b)->memInfo.WorkingSetSize);
+}
+
 int main( void )
 {
     // Get the list of process identifiers.
@@ -71,6 +75,7 @@ processInfo* processes = calloc(cProcesses, sizeof(processInfo));
             processes[i] = getProcessInfo( aProcesses[i] );
         }
     }
+    qsort(processes, cProcesses, sizeof(processInfo), memSort);
 for (i = 0; i < cProcesses; i ++) {
     if (strlen(processes[i].name) != 0) {
         _tprintf(TEXT("%s: memory: %u, pid: %u\n"), processes[i].name, processes[i].memInfo.WorkingSetSize, processes[i].pid);
