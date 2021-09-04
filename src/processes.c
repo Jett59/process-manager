@@ -45,6 +45,13 @@ processInfo getProcessInfo( DWORD processID )
     return result;
 }
 
+size_t getTotalUsedMemory () {
+    MEMORYSTATUSEX memInfo;
+    memInfo.dwLength = sizeof(MEMORYSTATUSEX);
+    GlobalMemoryStatusEx(&memInfo);
+    return memInfo.ullTotalPhys - memInfo.ullAvailPhys;
+}
+
 int memSort (void* a, void* b) {
     return (((processInfo*)a)->memInfo.WorkingSetSize - ((processInfo*)b)->memInfo.WorkingSetSize);
 }
@@ -68,21 +75,30 @@ int main( void )
 
 processInfo* processes = calloc(cProcesses, sizeof(processInfo));
 
+size_t totalMemoryUsed = 0;
     for ( i = 0; i < cProcesses; i++ )
     {
         if( aProcesses[i] != 0 )
         {
             processes[i] = getProcessInfo( aProcesses[i] );
+            totalMemoryUsed += processes [i].memInfo.WorkingSetSize;
+        }
+    }
+    for (i = 0; i < cProcesses; i ++) {
+        if (*processes[i].name == 0) {
+            // Empty name: system process
+            const TCHAR* name = TEXT("System");
+            memcpy(processes[i].name, name, strlen(name));
+            processes[i].memInfo.WorkingSetSize = getTotalUsedMemory() - totalMemoryUsed;
+            break;
         }
     }
     qsort(processes, cProcesses, sizeof(processInfo), memSort);
-    size_t totalMemoryUsed = 0;
 for (i = 0; i < cProcesses; i ++) {
     if (strlen(processes[i].name) != 0) {
         _tprintf(TEXT("%s: memory: %u, pid: %u\n"), processes[i].name, processes[i].memInfo.WorkingSetSize, processes[i].pid);
-        totalMemoryUsed += processes [i].memInfo.WorkingSetSize;
     }
 }
-printf("Total memory used: %u\n", totalMemoryUsed);
+printf("Total memory used: %u\n", getTotalUsedMemory());
     return 0;
 }
