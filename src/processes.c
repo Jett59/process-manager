@@ -62,13 +62,19 @@ int main( void )
 
     cProcesses = cbNeeded / sizeof(DWORD);
 
+processInfo* processes = calloc(cProcesses, sizeof(processInfo));
+
     for ( i = 0; i < cProcesses; i++ )
     {
         if( aProcesses[i] != 0 )
         {
-            getProcessInfo( aProcesses[i] );
+            processes[i] = getProcessInfo( aProcesses[i] );
         }
     }
-
+for (i = 0; i < cProcesses; i ++) {
+    if (strlen(processes[i].name) != 0) {
+        _tprintf(TEXT("%s: memory: %u, pid: %u\n"), processes[i].name, processes[i].memInfo.WorkingSetSize, processes[i].pid);
+    }
+}
     return 0;
 }
