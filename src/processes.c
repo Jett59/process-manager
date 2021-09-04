@@ -76,10 +76,13 @@ processInfo* processes = calloc(cProcesses, sizeof(processInfo));
         }
     }
     qsort(processes, cProcesses, sizeof(processInfo), memSort);
+    size_t totalMemoryUsed = 0;
 for (i = 0; i < cProcesses; i ++) {
     if (strlen(processes[i].name) != 0) {
         _tprintf(TEXT("%s: memory: %u, pid: %u\n"), processes[i].name, processes[i].memInfo.WorkingSetSize, processes[i].pid);
+        totalMemoryUsed += processes [i].memInfo.WorkingSetSize;
     }
 }
+printf("Total memory used: %u\n", totalMemoryUsed);
     return 0;
 }
