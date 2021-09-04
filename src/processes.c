@@ -2,13 +2,23 @@
 #include <stdio.h>
 #include <tchar.h>
 #include <psapi.h>
+#include <string.h>
+#include <stdlib.h>
 
 // To ensure correct resolution of symbols, add Psapi.lib to TARGETLIBS
 // and compile with -DPSAPI_VERSION=1
 
-void PrintProcessNameAndID( DWORD processID )
+typedef struct {
+    DWORD pid;
+    PROCESS_MEMORY_COUNTERS memInfo;
+    TCHAR name [MAX_PATH];
+} processInfo;
+
+processInfo getProcessInfo( DWORD processID )
 {
-    TCHAR szProcessName[MAX_PATH] = TEXT("<unknown>");
+    processInfo result;
+    memset(&result, 0, sizeof(processInfo));
+    result.pid = processID;
 
     // Get a handle to the process.
 
@@ -26,18 +36,13 @@ void PrintProcessNameAndID( DWORD processID )
         if ( EnumProcessModules( hProcess, &hMod, sizeof(hMod), 
              &cbNeeded) )
         {
-            GetModuleBaseName( hProcess, hMod, szProcessName, 
-                               sizeof(szProcessName)/sizeof(TCHAR) );
+            GetModuleBaseName( hProcess, hMod, result.name, 
+                               sizeof(result.name)/sizeof(TCHAR) );
         }
+        GetProcessMemoryInfo(hProcess, &result.memInfo, sizeof(result.memInfo));
     }
-
-    // Print the process name and identifier.
-
-    _tprintf( TEXT("%s  (PID: %u)\n"), szProcessName, processID );
-
-    // Release the handle to the process.
-
     CloseHandle( hProcess );
+    return result;
 }
 
 int main( void )
@@ -57,13 +62,11 @@ int main( void )
 
     cProcesses = cbNeeded / sizeof(DWORD);
 
-    // Print the name and process identifier for each process.
-
     for ( i = 0; i < cProcesses; i++ )
     {
         if( aProcesses[i] != 0 )
         {
-            PrintProcessNameAndID( aProcesses[i] );
+            getProcessInfo( aProcesses[i] );
         }
     }
 
