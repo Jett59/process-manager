@@ -52,8 +52,8 @@ size_t getTotalUsedMemory () {
     return memInfo.ullTotalPhys - memInfo.ullAvailPhys;
 }
 
-int memSort (void* a, void* b) {
-    return (int)((processInfo*)a)->memInfo.WorkingSetSize - (int)((processInfo*)b)->memInfo.WorkingSetSize;
+const int memSort (void* a, void* b) {
+    return ((processInfo*)a)->memInfo.WorkingSetSize > ((processInfo*)b)->memInfo.WorkingSetSize ? 1 : -1;
 }
 
 int main( void )
@@ -67,7 +67,6 @@ int main( void )
     {
         return 1;
     }
-
 
     // Calculate how many process identifiers were returned.
 
@@ -97,10 +96,10 @@ size_t totalMemoryUsed = 0;
     qsort(processes, cProcesses, sizeof(processInfo), memSort);
 for (i = 0; i < cProcesses; i ++) {
     if (strlen(processes[i].name) != 0) {
-        _tprintf(TEXT("%s: memory: %u, pid: %u\n"), processes[i].name, processes[i].memInfo.WorkingSetSize, processes[i].pid);
+        _tprintf(TEXT("%s: memory: %zu, pid: %u\n"), processes[i].name, processes[i].memInfo.WorkingSetSize, processes[i].pid);
     }
 }
-printf("Total memory used: %u\n", getTotalUsedMemory());
+printf("Total memory used: %zu\n", getTotalUsedMemory());
 free(processes);
     return 0;
 }
