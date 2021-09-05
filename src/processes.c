@@ -53,7 +53,7 @@ size_t getTotalUsedMemory () {
 }
 
 int memSort (void* a, void* b) {
-    return (((processInfo*)a)->memInfo.WorkingSetSize - ((processInfo*)b)->memInfo.WorkingSetSize);
+    return (int)((processInfo*)a)->memInfo.WorkingSetSize - (int)((processInfo*)b)->memInfo.WorkingSetSize;
 }
 
 int main( void )
@@ -90,6 +90,7 @@ size_t totalMemoryUsed = 0;
             const TCHAR* name = TEXT("System");
             memcpy(processes[i].name, name, strlen(name));
             processes[i].memInfo.WorkingSetSize = getTotalUsedMemory() - totalMemoryUsed;
+            processes[i].pid = 0;
             break;
         }
     }
@@ -100,5 +101,6 @@ for (i = 0; i < cProcesses; i ++) {
     }
 }
 printf("Total memory used: %u\n", getTotalUsedMemory());
+free(processes);
     return 0;
 }
